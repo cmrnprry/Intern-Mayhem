@@ -29,4 +29,16 @@ public class PlayerController : MonoBehaviour
 
         StartCoroutine(PlayerMovement());
     }
+
+    public void StopMovement()
+    {
+        StopAllCoroutines();
+
+        rb.velocity = Vector2.zero;
+    }
+
+    public void RestartMovement()
+    {
+        StartCoroutine(PlayerMovement());
+    }
 }

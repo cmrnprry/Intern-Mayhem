@@ -26,6 +26,21 @@ public class HotKeyBar : MonoBehaviour
 
     }
 
+    public void StopChoosing()
+    {
+        StopAllCoroutines();
+    }
+
+    public void RestartChoosing()
+    {
+        StartCoroutine(ChooseKey());
+    }
+  
+    public void GetCurrentOutfit()
+    {
+
+    }
+
     //Hotkeys only go up to 5 rn bc that's what I have in the Input Manager and I'm, lazy B)
     IEnumerator ChooseKey()
     {
