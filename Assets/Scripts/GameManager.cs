@@ -8,6 +8,8 @@ public class GameManager : MonoBehaviour
     public EmotionController ec;
     public HotKeyBar hk;
 
+    public LevelManager level;
+
     //TESTING TO GET RANDOMTHING
     //DELETE LATER PROBABLY
     public Emotion[] list;
@@ -17,35 +19,22 @@ public class GameManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        ChooseNextEmotion();
+        StartCoroutine(LevelLoop());
     }
 
-
-    private void OnTriggerEnter2D(Collider2D other)
+    IEnumerator LevelLoop()
     {
-        if (other.CompareTag("Player"))
+        TimeSlot nextSlot = level.slots[0];
+        yield return new WaitForSecondsRealtime(nextSlot.TimeToComplete);
+
+        // prolly want to make some helper functions for different slot types if we make them.
+        if (!(nextSlot is AudienceSlot))
         {
-            Debug.Log("Player Here");
-            StartCoroutine(NamedFunction());
+            // idk dude something, just go to the next one for now.
+            level.slots.RemoveAt(0);
+            StartCoroutine(LevelLoop());
+            yield break;
         }
-    }
-
-    private void ChooseNextEmotion()
-    {
-        //LMAO RN ITS RANDONM
-        //MAYBE MAKE A REAL WAY TO CHOOSE THE NEXT
-        //THIS IS GOING TO BE HARD CODED ANYWAYYYYYY
-        // or just make max do it......
-        int rand = Random.Range(0, 5);
-        
-        currEmotion = list[rand];
-        Debug.Log(currEmotion.ToString());
-    }
-
-    IEnumerator NamedFunction()
-    {
-        yield return new WaitForSecondsRealtime(.25f);
-
         //stop player movement
         player.StopMovement();
 
@@ -54,23 +43,31 @@ public class GameManager : MonoBehaviour
 
         //choose emotion
         ec.CheckWheelVisible();
-        yield return new WaitUntil(() => !ec.isOn);
+        yield return new WaitUntil(() => !ec.isOn); // Should this time out?
 
         Emotion e = ec.GetCurrentEmotion();
 
-        //check correct emotion
-        string x = (currEmotion == e) ? "Correct" : "Incorrect";
-        Debug.Log(x);
-
-        //Check if correct outfit
+        AudienceSlot checker = (AudienceSlot)nextSlot;
 
         //calculate score
+        float score = checker.GetOverallAccuracy(player.transform.position, e);
+        Debug.Log("Score: " + score);
 
-        //display score
+        //display score (maybe want to show separate scores?)
 
         //next position / end level
-        ChooseNextEmotion();
+        level.slots.RemoveAt(0);
         player.RestartMovement();
         hk.RestartChoosing();
+        if (level.slots.Count > 0)
+        {
+            StartCoroutine(LevelLoop());
+        }
+        else
+        {
+            // end the level or something.
+            Debug.Log("Level ended.");
+            yield break;
+        }
     }
 }
